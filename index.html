@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translúcido — Site Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        
+        :root {
+            --carmine: #990000;
+            --gold: #ff9900;
+            --dark-bg: #030303;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--dark-bg); 
+            color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .title-font { font-family: 'Syncopate', sans-serif; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .active-track {
+            border-color: var(--carmine);
+            background: rgba(153, 0, 0, 0.15);
+            padding-left: 2rem !important;
+        }
+
+        .lyrics-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .lyrics-container::-webkit-scrollbar-thumb {
+            background: var(--carmine);
+            border-radius: 10px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #ffffff, var(--carmine), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes prism-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .prism-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(153, 0, 0, 0.08) 0%, transparent 50%);
+            z-index: -1;
+            animation: prism-rotate 25s linear infinite;
+        }
+
+        #youtube-player-container {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+    <div class="prism-bg"></div>
+    <div id="youtube-player-container"><div id="yt-player"></div></div>
+
+    <nav class="fixed top-0 w-full z-50 p-6 flex justify-between items-center glass-panel">
+        <span class="title-font text-sm tracking-[0.5em] gradient-text">Translúcido</span>
+        <div class="flex gap-8 text-[10px] uppercase tracking-widest text-neutral-400">
+            <a href="#album" class="hover:text-white transition-colors">Tracklist</a>
+            <a href="#lyrics" class="hover:text-white transition-colors">Letras</a>
+        </div>
+    </nav>
+
+    <header class="h-[60vh] flex flex-col items-center justify-center text-center p-6 pt-24">
+        <h1 class="title-font text-4xl md:text-7xl font-bold tracking-[0.6em] uppercase gradient-text mb-4">Translúcido</h1>
+        <p class="text-neutral-500 text-xs md:text-sm tracking-[0.8em] uppercase font-light">Uma jornada sonora entre a lucidez e o caos</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 pb-32">
+        
+        <section id="album" class="space-y-6">
+            <h2 class="title-font text-xl text-neutral-400 mb-8 uppercase tracking-widest text-center lg:text-left">O Álbum</h2>
+            <div id="tracklist-container" class="space-y-3">
+                <!-- Injetado por JS -->
+            </div>
+
+            <div class="sticky bottom-8 glass-panel p-6 rounded-2xl shadow-2xl mt-12 border-t border-white/10">
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-neutral-900 rounded-lg flex items-center justify-center border border-white/5">
+                            <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                        </div>
+                        <div>
+                            <h3 id="player-title" class="title-font text-[10px] uppercase tracking-widest text-white">Selecione uma faixa</h3>
+                            <p id="player-status" class="text-[9px] text-neutral-500 uppercase tracking-widest">Aguardando...</p>
+                        </div>
+                    </div>
+                    
+                    <button id="btn-play-pause" class="p-4 bg-red-700 hover:bg-red-600 rounded-full transition-all disabled:opacity-30" disabled>
+                        <svg id="icon-play" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="icon-pause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                </div>
+                <div class="mt-4 w-full bg-white/10 h-1 rounded-full overflow-hidden">
+                    <div id="player-progress" class="bg-red-600 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="lyrics" class="glass-panel rounded-3xl p-8 md:p-12 min-h-[500px] flex flex-col">
+            <div id="lyrics-header" class="mb-8 pb-4 border-b border-white/10 opacity-0 transition-opacity duration-700">
+                <h2 id="lyrics-title" class="title-font text-2xl text-red-600 mb-2 uppercase tracking-wider">Título</h2>
+                <p id="lyrics-tag" class="text-[10px] text-neutral-500 uppercase tracking-widest">Conceito</p>
+            </div>
+            <div id="lyrics-content" class="lyrics-container overflow-y-auto text-neutral-400 font-light leading-relaxed whitespace-pre-line text-lg italic pr-4">
+                Escolha uma música ao lado para mergulhar nos versos e na sonoridade de Translúcido.
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center p-12 text-[9px] text-neutral-800 uppercase tracking-[0.6em] font-bold border-t border-white/5">
+        © 2025 Projeto Translúcido • Carmine Studios
+    </footer>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        const songs = [
+            {
+                id: 1,
+                title: "Translúcido",
+                youtubeId: "DLtwoININdw&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw", 
+                concept: "A Percepção",
+                lyrics: `Você enxerga além daqui?
+
+Ecos me lembram como levantar
+Marcas profundas... Como te contar? 
+É minha única saída 
+Aonde vou chegar? 
+
+Deixa eu sentir teu ser... (deixa)
+Solta o teu caos em mim... (assim)
+Mas se pode ver...
+Você enxerga além daqui?
+
+Eu... NÃO!
+Me banho mais naquela luz
+Eles... VÃO!
+No trilho que me conduz
+Ainda...VOU!
+Transcender em carmim
+EU... SOU!
+Sou lúcido assim?
+Translúcido assim
+
+Você enxerga além daqui?`
+            },
+            {
+                id: 2,
+                title: "Idealizadores",
+                youtubeId: "Ym45hDMsLJc&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=2",
+                concept: "A Crítica Industrial",
+                lyrics: `Idealizadores... Chamam para uma dose.
+Com as malas no vão, flutuando.
+Mergulhando e definhando. 
+Entre o pouco e o tanto faz. 
+Olhos que simulam meu pesar.
+
+Tão entorpecidos estão (Tão sós!) 
+Tão desnorteados vão (Tão sós!)
+Pagam pela cura vil, indolor... 
+Tão aquecidos vão, 
+Tão protegidos são,
+Propagam existência sem pudor.
+
+Hoje, um pouco mais. 
+O mundo bombardeia a paz. 
+Emoção que busco imersa em ficção. 
+Relatos contam vida... Maquiam a ferida... 
+Mas doutor, meu filho sofre... 
+DE FALSO AMOR!
+
+Tão entorpecidos estão (Tão sós!) 
+Tão desnorteados vão (Tão sós!)
+Pagam pela cura vil, indolor... 
+Tão aquecidos vão, 
+Tão protegidos são,
+Propagam existência sem pudor.
+
+Tão perto, tão longe,
+Eu confronto sua receita. 
+Entre versos e refrões, 
+São padrões dessa colheita.`
+            },
+            {
+                id: 3,
+                title: "5 Fases",
+                youtubeId: "ZwddRoqN42s&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=3",
+                concept: "A Desintegração",
+                lyrics: `Me encontro aqui 
+Onde o tempo para e perde o senso de sair 
+Cerca e deixa claro o que tenho que sentir 
+Falam e mostram como vou e devo prosseguir
+
+Me vejo aqui 
+Pálido ao vento na vontade de servir 
+Sigo a falácia que ao todo contradiz 
+Paralelamente, lentamente vai sumir
+
+Me perco aqui
+Livre, leve e solto: a canção sempre diz 
+Traços que negamos levam quem eu sempre quis 
+Versos e poemas, um mero aprendiz
+
+Não estou aqui... (Onde estou?) 
+Pra demonstrar que sou uma forma de matiz
+
+Nem quero ir... (Onde vou?) 
+E novamente ver minha sombra se esvair
+
+Me arrasto em mim
+No esforço vão de tentar me fundir 
+Aos restos de um tempo que não me faz quis 
+Onde o silêncio aprendeu a rugir
+
+Não estou aqui... 
+Pra demonstrar que sou uma forma de matiz
+
+Nem quero ir... 
+E novamente ver minha sombra sucumbir
+
+Me encontro aqui, 
+me vejo aqui 
+Me perco aqui, 
+não estou e nem quero ir`
+            },
+            {
+                id: 4,
+                title: "Vítima",
+                youtubeId: "oYgBv19yNM0&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=4",
+                concept: "O Trauma",
+                lyrics: ` Quem de nós vai abrir... (Quem?) As portas?
+Quem vai ser... (Alguém?) O primeiro a falar?
+
+A vítima se esconde na janela do quinto andar
+Não vá pular...
+Pelo crime de se vestir de coragem
+E sair... Como alguém...
+
+A mentira que seu pai te contou
+Ô minha filha... Isso vai passar
+
+O culpado se esconde aqui
+Perto de mim... perto de mim...
+O crime de ser você
+Te condenou...
+
+Quem de nós vai abrir... (Quem?) As portas?
+Quem vai ser... (Alguém?) O primeiro a falar?
+
+A vítima se esconde na janela do quinto andar
+Não vá pular...
+Pelo crime de se vestir de coragem
+E sair... Como alguém...
+
+A ferida que seu pai escondeu
+Ai, minha filha... Isso vai sarar
+
+O culpado ainda mora aqui.
+Cada vez mais perto de mim
+O crime de ser você
+Te condenou
+
+Quem de nós
+Vai ouvir
+A voz...
+Do socorro
+Da ajuda que cessou....
+
+O primeiro a falar?
+QUEM VAI SER!
+O PRIMEIRO A FALAR?
+
+QUEM VAI SER!!!
+O PRIMEIRO...
+O PRIMEIRO?
+
+Quem de nós vai abrir... As portas
+Quem vai ser... O primeiro a falar?
+
+A vítima se esconde em algum lugar
+Bem... longe daqui.
+Pelo crime de se vestir de coragem
+E sair... Como alguém...
+
+Quem de nós vai abrir... As portas
+Quem vai ser... O primeiro a falar?
+
+A vítima se esconde em algum lugar
+Bem... longe daqui.
+Pelo crime de se vestir de coragem
+E sair... Como alguém...
+DE SER APENAS ALGUÉM`
+            },
+            {
+                id: 5,
+                title: "Os Versos Mais Simples",
+                youtubeId: "fXy1O3J90lI&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=5",
+                concept: "A Apatia Urbana",
+                lyrics: `Pareciam pedras...
+Pareciam firmes as decisões.
+
+Eu pensei que rasgaria o céu... Duvidando...
+Sobre as certezas do chão.
+
+O que me torturava?
+A presença ou ausência de emoções? 
+Tudo retornava.
+Carência por excesso de opções
+Verei...
+
+Vivo morrendo nas noites.
+De saudades do ontem.
+Sempre esperando o amanhã.
+Se tornar... Um novo passado.
+
+Nos semáforos vermelhos, adormeço sem nada sentir.
+No reflexo dos espelhos, passo sem nada refletir.
+Verei...
+
+ME ESCONDO POR TRÁS DE PALAVRAS GRANDES.
+E FICO ATADO ÀS CORRENTES QUE...
+ANTES ME DOMINAVAM...`
+            },
+            {
+                id: 6,
+                title: "Catador de Sonhos",
+                youtubeId: "3qe2vJ4zcqY&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=6",
+                concept: "O Resgate",
+                lyrics: `Alguém me faça crer... 
+Na forma do meu ser...
+E nas marcas do que eu sou agora...
+
+Quem será... Meu catador de sonhos?
+Quem dirá as promessas enquanto
+Eu... parar?
+Vai refazer os passos
+E quem virá... dizer... você?
+
+E tudo que eu quero renovar
+Voltam à tona
+Moldam meu pesar
+
+Alguém me faça crer
+Na forma do meu ser
+E nas marcas do que sou agora
+
+Retornam ao meu querer
+Quem pode ser você?
+Tudo o que não vejo agora
+
+E TUDO QUE EU QUERO RESGATAR
+Se desconstruir...
+Pode renovar...
+
+É quem me faz crer
+Na forma do meu ser
+Ela é tudo o que eu vejo agora
+
+Mas pode ser você
+Entre os mundos ver
+Será o meu catador de sonhos...
+
+Alguém me faça crer
+Na forma do meu ser
+E nas marcas do que sou agora
+
+Retornam ao meu querer
+Quem pode ser você?
+Tudo o que não vejo agora`
+            },
+            {
+                id: 7,
+                title: "Adormecer",
+                youtubeId: "3NBUai7Qxfk&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=7",
+                concept: "A Rendição",
+                lyrics: `Em algum lugar
+Naquele sonho...
+Pessoas me obrigam
+A acordar...
+
+Em algum lugar
+Naquele mundo...
+Eu aprendi
+A caminhar...
+
+Em algum lugar
+Entre as palavras...
+Eu ouvi
+O teu falar....
+
+E tudo... O que eu quero...Eu quero?
+
+Eu quero... Ser...
+A ponte que separa
+A loucura da... Lucidez...
+Eu quero...Ver...
+Quando a noite acabar
+Eu quero adormecer...
+
+Eu algum lugar
+Nessas estrelas...
+Eu te fiz uma oração
+Em algum lugar
+Na minha mente...
+Eu te escrevi uma canção...
+Em algum lugar
+Nessas ruas...
+Alguém sofreu
+No coração...
+
+E tudo... Que eu queira dizer...
+
+Eu quero... Ser... (ser)
+Teu ombro nesta noite
+A inspiração ao amanhecer.
+
+Eu quero... Ver...
+Se tudo vai passar.
+Hoje eu quero... Adormecer...
+
+Eu quero adormecer...
+
+Eu quero... Eu quero... Adormecer.`
+            },
+            {
+                id: 8,
+                title: "Meu Lugar",
+                youtubeId: "u6RVpmJ_dKg&list=PLVIpALDl1dlJbEqhyhYNJXNWRwdVkFZVw&index=8",
+                concept: "O Despertar Solar",
+                lyrics: `Moldado na solidão 
+Sem mapa ou direção 
+Pisando em pedras, só
+Desata o próprio nó
+
+O tempo arrasta o fim, sem fim 
+Mas há uma chama em mim 
+Não vivo de lamento, não
+Sou mais que esse sofrimento
+
+Eu vou arder nesse sol
+E além... Eu sei... 
+Pode escutar?
+Ainda posso provar
+
+O choro já secou 
+O monstro se calou 
+Ao pôr do sol 
+Nossa guerra acabou
+
+Sussurros dizem: "Vai perder" 
+Mas eu grito: "E eu vou crescer!" (Vou crescer!) 
+O inverno já passou
+A minha vida despertou
+
+Eu vou arder nesse sol!
+E além... Eu sei... 
+Pode escutar
+Ainda posso provar
+
+O choro já secou 
+O monstro se calou 
+Ao pôr do sol 
+Nossa guerra acabou`
+            }
+        ];
+
+        let player;
+        let isReady = false;
+        const tracklistEl = document.getElementById('tracklist-container');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const lyricsHeader = document.getElementById('lyrics-header');
+        const lyricsTitle = document.getElementById('lyrics-title');
+        const lyricsTag = document.getElementById('lyrics-tag');
+        const playerTitle = document.getElementById('player-title');
+        const playerStatus = document.getElementById('player-status');
+        const btnPlayPause = document.getElementById('btn-play-pause');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+        const progressBar = document.getElementById('player-progress');
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                height: '0',
+                width: '0',
+                videoId: '',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady() {
+            isReady = true;
+            renderTracklist();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+                playerStatus.innerText = "Reproduzindo agora";
+                trackProgress();
+            } else {
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+                playerStatus.innerText = event.data === YT.PlayerState.PAUSED ? "Pausado" : "Aguardando";
+            }
+        }
+
+        function trackProgress() {
+            if (player && player.getPlayerState() === YT.PlayerState.PLAYING) {
+                const duration = player.getDuration();
+                const currentTime = player.getCurrentTime();
+                if (duration > 0) {
+                    progressBar.style.width = (currentTime / duration * 100) + "%";
+                }
+                setTimeout(trackProgress, 500);
+            }
+        }
+
+        function renderTracklist() {
+            songs.forEach(song => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-6 rounded-2xl glass-panel group flex items-center justify-between transition-all hover:bg-white/5";
+                btn.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[9px] text-neutral-600 uppercase font-bold mb-1 tracking-widest">${song.concept}</span>
+                        <span class="title-font text-sm uppercase tracking-widest group-hover:text-red-500 transition-colors">${song.title}</span>
+                    </div>
+                    <svg class="w-5 h-5 text-red-900 opacity-20 group-hover:opacity-100 transition-all" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                `;
+                btn.onclick = () => selectTrack(song, btn);
+                tracklistEl.appendChild(btn);
+            });
+        }
+
+        function selectTrack(song, element) {
+            if (!isReady) return;
+            
+            document.querySelectorAll('#tracklist-container button').forEach(b => b.classList.remove('active-track'));
+            element.classList.add('active-track');
+            
+            player.loadVideoById(song.youtubeId);
+            btnPlayPause.disabled = false;
+            playerTitle.innerText = song.title;
+
+            lyricsHeader.style.opacity = '1';
+            lyricsTitle.innerText = song.title;
+            lyricsTag.innerText = song.concept;
+            lyricsContent.innerText = song.lyrics;
+
+            if (window.innerWidth < 1024) {
+                document.getElementById('lyrics').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        btnPlayPause.onclick = () => {
+            if (!isReady) return;
+            const state = player.getPlayerState();
+            state === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
+        };
+    </script>
+</body>
+</html>
